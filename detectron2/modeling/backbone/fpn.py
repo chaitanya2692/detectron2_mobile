@@ -243,3 +243,20 @@ def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
         fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
     )
     return backbone
+
+class LastLevelP6(nn.Module):
+    """
+    This module is used in FCOS to generate extra layers
+    """
+
+    def __init__(self, in_channels, out_channels, in_features="res5"):
+        super().__init__()
+        self.num_levels = 1
+        self.in_feature = in_features
+        self.p6 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        for module in [self.p6]:
+            weight_init.c2_xavier_fill(module)
+
+    def forward(self, x):
+        p6 = self.p6(x)
+        return [p6]
